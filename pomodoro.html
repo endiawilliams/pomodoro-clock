@@ -1,0 +1,240 @@
+<html>
+
+    <head>
+        <title>Pomodoro Clock</title>
+        <style>
+            #container {
+                position: fixed;
+                left: 50%;
+                top: 25%;
+                transform: translate(-50%, -25%);
+            }
+
+            body {
+                background-color: #167552;
+                font-family: arial, helvetica, sans-serif;
+                font-weight: bold;
+                color: white;
+            }
+
+            table {
+                background-color: #c54245;
+                border-radius: 24px;
+                width: 600px;
+            }
+
+            h1 {
+                width: 600px;
+                text-align: center;
+                font-size: 48px;
+            }
+
+            .btns {
+                text-align: center;
+                font-size: 48px;
+                padding-bottom: 40px;
+                padding-top: 40px;
+            }
+
+            .fieldnames {
+                padding-top: 40px;
+                text-align: center;
+                font-weight: bold;
+                font-size: 24px;
+            }
+
+            input {
+                text-align: center;
+                width: 100px;
+                font-size: 24px;
+                font-weight: bold;
+            }
+
+            form {
+                padding-left: 100px;
+                padding-right: 100px;
+            }
+
+            #counter {
+                text-align: center;
+                font-size: 80px;
+            }
+
+            #icon {
+                text-align: center;
+                font-size: 56px;
+                padding-bottom: 10px;
+            }
+
+            .numbers {
+                text-align: center;
+                font-size: 24px;
+                font-weight: bold;
+                padding-left: 100px;
+                padding-right: 100px;
+                width: 30px;
+            }
+
+            #session-up,
+            #session-down,
+            #break-up,
+            #break-down {
+                font-size: 18px;
+                vertical-align: 3px;
+            }
+        </style>
+        <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+            integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    </head>
+
+    <body>
+        <div id="container">
+            <h1>🍅 Pomodoro Clock 🍅</h1>
+            <table>
+                <tr>
+                    <td class="fieldnames">Session</td>
+                    <td class="fieldnames">Break</td>
+                </tr>
+                <tr>
+                    <td class="numbers">
+                        <i class="fa fa-chevron-up" id="session-up"></i>
+                        <b id="session-length">25</b>
+                        <i class="fa fa-chevron-down" id="session-down"></i>
+                    </td>
+                    <td class="numbers">
+                        <i class="fa fa-chevron-up" id="break-up"></i>
+                        <b id="break-length">5</b>
+                        <i class="fa fa-chevron-down" id="break-down"></i>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" id="icon"><i class="fa fa-pencil-square-o"></i></td>
+                </tr>
+                <tr>
+                    <td colspan="2" id="counter">25:00</td>
+                </tr>
+                <tr>
+                    <td class="btns">
+                        <i class="fa fa-play"></i>
+                    </td>
+                    <td class="btns">
+                        <i class="fa fa-stop"></i>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <script>
+            const buttons = document.querySelectorAll('i');
+            const session = document.querySelector("#session-length");
+            //🚨🚨🚨🙃🚨🚨🚨
+            //break is a keyword so we're pretending to be british
+            //and calling it brake. that's how they spell it there, right?
+            const brake = document.querySelector("#break-length");
+            const counter = document.querySelector("#counter");
+            let sessionLength = 25;
+            let breakLength = 5;
+            let minutes = sessionLength;
+            let seconds = 0;
+            let timer;
+            let sessionStarted = false;
+
+            buttons.forEach((button) => {
+
+                button.addEventListener('click', (e) => {
+                    //session and break inc/dec
+                    if (button.id == "session-up") {
+                        session.textContent = ++sessionLength;
+                        if (!sessionStarted)
+                            counter.textContent = sessionLength + ":00";
+                    } else if (button.id == "session-down" && sessionLength > 1) {
+                        session.textContent = --sessionLength;
+                        if (!sessionStarted)
+                            counter.textContent = sessionLength + ":00";
+                    } else if (button.id == "break-up") {
+                        brake.textContent = ++breakLength;
+                    } else if (button.id == "break-down" && breakLength > 1) {
+                        brake.textContent = --breakLength;
+                    }
+
+                    else if (button.classList.contains("fa-play")) {
+                        play();
+                    } else if (button.classList.contains("fa-pause")) {
+                        pause();
+                    } else if (button.classList.contains("fa-stop")) {
+                        stop();
+                    }
+                });
+            });
+
+            function play() {
+                let btn = document.querySelector(".fa-play");
+                btn.classList.remove("fa-play");
+                btn.classList.add("fa-pause");
+                if (!sessionStarted) {
+                    minutes = sessionLength;
+                    seconds = 0;
+                    sessionStarted = true;
+                }
+                timer = setInterval(countDown, 1000);
+            }
+
+            function countDown() {
+                if (seconds == 0 && minutes != 0) {
+                    --minutes;
+                    seconds = 59;
+                    counter.textContent = minutes + ":" + seconds;
+                } else if (seconds > 10) {
+                    --seconds;
+                    counter.textContent = minutes + ":" + seconds;
+                } else if (seconds != 0) {
+                    --seconds;
+                    counter.textContent = minutes + ":0" + seconds;
+                } else if (seconds == 0 && minutes == 0) {
+                    if (document.querySelector(".fa-pencil-square-o")) {
+                        counter.textContent = "0:00";
+                        minutes = breakLength;
+                        let sessionIcon = document.querySelector(".fa-pencil-square-o");
+                        sessionIcon.classList.remove("fa-pencil-square-o");
+                        sessionIcon.classList.add("fa-moon-o");
+                    } else {
+                        minutes = sessionLength;
+                        counter.textContent = "0:00";
+                        let sessionIcon = document.querySelector(".fa-moon-o");
+                        sessionIcon.classList.remove("fa-moon-o");
+                        sessionIcon.classList.add("fa-pencil-square-o");
+                    }
+                }
+            }
+
+            function pause() {
+                let btn = document.querySelector(".fa-pause");
+                btn.classList.remove("fa-pause");
+                btn.classList.add("fa-play");
+                clearInterval(timer);
+            }
+
+            function stop() {
+                let btn = document.querySelector(".fa-pause");
+
+                if (btn) {
+                    btn.classList.remove("fa-pause");
+                    btn.classList.add("fa-play");
+                }
+
+                clearInterval(timer);
+                sessionStarted = false;
+                minutes = sessionLength;
+                seconds = 0;
+                counter.textContent = minutes + ":00";
+
+                let sessionIcon = document.querySelector(".fa-moon-o");
+                if (sessionIcon) {
+                    sessionIcon.classList.remove("fa-moon-o");
+                    sessionIcon.classList.add("fa-pencil-square-o");
+                }
+            }
+        </script>
+    </body>
+
+</html>
